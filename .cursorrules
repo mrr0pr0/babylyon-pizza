@@ -1,0 +1,173 @@
+# Babylon Pizza — Online Ordering System
+# Cursor Rules
+
+## Project Scope
+This project is ONLY the online ordering system for Babylon Pizza.
+- The marketing/landing page is built separately by another developer
+- This codebase covers: menu browsing, cart, checkout, order confirmation, order tracking, and the restaurant admin panel
+- Do NOT build or modify anything related to the public-facing homepage or brand site
+
+## Stack
+- Framework: Next.js 14+ (App Router)
+- Database: Neon (PostgreSQL via @neondatabase/serverless)
+- ORM: Drizzle ORM
+- Auth: NextAuth.js (email/password + social)
+- Payments: Vipps MobilePay (primary, Norway) + Stripe (fallback)
+- State: Zustand (cart state)
+- Styling: Tailwind CSS + CSS variables for brand tokens
+- Animations: Framer Motion
+
+## Brand Design Tokens
+Use these CSS variables throughout. Never hardcode colors.
+
+```css
+:root {
+  --color-bg:        #0a0a0a;
+  --color-surface:   #141414;
+  --color-border:    #1f1f1f;
+  --color-gold:      #f5a800;
+  --color-gold-dim:  #c88a00;
+  --color-text:      #f0f0f0;
+  --color-muted:     #888888;
+  --color-danger:    #e03c3c;
+  --color-success:   #2ecc71;
+
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+}
+```
+
+Load from Google Fonts: Bebas Neue (display), DM Sans (body).
+
+## UI & Component Rules
+
+### Buttons
+- Primary CTA: `bg-[var(--color-gold)] text-black font-bold uppercase tracking-widest hover:bg-[var(--color-gold-dim)] transition-colors`
+- Secondary: `border border-[var(--color-gold)] text-[var(--color-gold)] bg-transparent hover:bg-[var(--color-gold)]/10`
+- Danger: `bg-[var(--color-danger)] text-white`
+- Disabled state must always be visually distinct
+
+### Cards (menu items)
+- Dark surface `bg-[var(--color-surface)]` with `border border-[var(--color-border)]`
+- Image top, content bottom
+- Gold price label
+- Green "VELG" (select) button — matches easybooking style but in brand palette
+- Hover: subtle gold border glow `hover:border-[var(--color-gold)]/50`
+
+### Cart Sidebar
+- Fixed right panel, always visible on desktop (≥1024px)
+- Slide-in drawer on mobile
+- Shows item list, quantity controls (−/+/delete), discount code input, total, and "Send inn ordre" CTA
+- Step progress indicator at top (1 → 2 → 3) using gold active color
+
+### Layout
+- Ordering pages use a two-column layout: menu (left, ~75%) + cart (right, ~25%)
+- Mobile: single column, cart becomes bottom drawer/sheet
+- Nav bar: black background, gold logo + location name on left, phone number on right
+
+## File & Folder Structure
+```
+src/
+  app/
+    (ordering)/
+      [location]/
+        page.tsx          # Menu browsing page
+        checkout/
+          page.tsx        # Checkout (contact info, delivery/pickup)
+        confirmation/
+          page.tsx        # Order confirmed
+      layout.tsx          # Shared ordering layout (nav + cart sidebar)
+    admin/
+      page.tsx            # Restaurant admin — incoming orders
+    api/
+      orders/
+        route.ts
+      menu/
+        route.ts
+      auth/
+        [...nextauth]/route.ts
+  components/
+    menu/
+      MenuGrid.tsx
+      MenuItemCard.tsx
+      CategoryNav.tsx
+      ItemModal.tsx       # Sauce/size/extras selector modal
+    cart/
+      CartSidebar.tsx
+      CartItem.tsx
+      StepIndicator.tsx
+    checkout/
+      CheckoutForm.tsx
+    ui/
+      Button.tsx
+      Badge.tsx
+      Modal.tsx
+  lib/
+    db/
+      schema.ts           # Drizzle schema
+      index.ts            # Neon client
+    store/
+      cart.ts             # Zustand cart store
+    utils.ts
+  types/
+    index.ts
+```
+
+## Database Schema (Drizzle + Neon PostgreSQL)
+Key tables:
+- `locations` — Ås, Vestby, Drøbak branches with phone/address
+- `categories` — Kebab, Grill, Salater, Barnemeny, Pizza, Tilbehør, Drikke
+- `menu_items` — name, description, base_price, category_id, location_id, image_url, allergens
+- `item_variants` — size options (Liten/Medium/Stor) with price delta
+- `item_modifiers` — Sauce choice (Mild/Medium/Sterk/Uten saus), extras, removals
+- `orders` — status (pending/confirmed/preparing/ready/delivered), location_id, total, delivery_type
+- `order_items` — order_id, item_id, quantity, chosen modifiers, line_price
+- `customers` — name, phone, email, address
+
+## Business Logic Rules
+1. Each location has its own menu (some items may differ between branches)
+2. Customer must select a location before seeing the menu
+3. Cart is location-scoped — switching location clears the cart (show confirmation dialog)
+4. Sauce selection is OBLIGATORISK (required) on kebab items — block "Add to cart" until selected
+5. Discount codes are validated server-side only — never trust client
+6. Order confirmation sends SMS via Twilio to the customer's phone number
+7. Admin panel polls for new orders every 30 seconds (or use Supabase Realtime / SSE)
+8. Supported delivery types: "Henting" (pickup) and "Levering" (delivery, location-dependent)
+
+## Norwegian Language
+All customer-facing UI text must be in Norwegian (Bokmål):
+- "Velg" = Select
+- "Send inn ordre" = Place order
+- "Din ordre" = Your order
+- "Tøm handlekurv" = Clear cart
+- "Tilbake" = Back
+- "Neste" = Next
+- "Totalt" = Total
+- "Obligatorisk" = Required
+- "Legg inn rabattkode" = Enter discount code
+
+## Code Quality
+- All components must be TypeScript strict
+- Use server components by default; add `"use client"` only when needed (interactivity, hooks)
+- API routes must validate input with Zod
+- Never expose DB credentials — use environment variables only
+- Loading states: skeleton loaders on menu grid, spinner on cart submit
+- Error boundaries on menu and checkout pages
+
+## Environment Variables Required
+```
+DATABASE_URL=          # Neon connection string
+NEXTAUTH_SECRET=
+NEXTAUTH_URL=
+VIPPS_CLIENT_ID=
+VIPPS_CLIENT_SECRET=
+VIPPS_MERCHANT_SERIAL=
+STRIPE_SECRET_KEY=
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_PHONE_NUMBER=
+```

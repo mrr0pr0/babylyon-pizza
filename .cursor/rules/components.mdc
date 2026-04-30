@@ -1,0 +1,57 @@
+# Component Generation Rules for Babylon Pizza Ordering
+
+## When generating any React component:
+
+1. **Always use brand tokens** — pull colors from CSS variables, never hardcode hex
+2. **Always TypeScript** — define props interface above the component
+3. **Server vs Client** — default to server component; add `"use client"` only if using useState/useEffect/event handlers
+4. **Norwegian text** — all UI strings in Bokmål
+5. **Accessibility** — buttons need aria-labels, modals need focus trap, form inputs need labels
+
+## Menu Item Card template pattern:
+```tsx
+interface MenuItemCardProps {
+  item: MenuItem
+  onSelect: (item: MenuItem) => void
+}
+// Dark card, image top, gold price, green VELG button
+// Hover: gold border glow
+// Show allergen info truncated with "Les mer" link
+```
+
+## ItemModal (sauce/extras selector) rules:
+- Sauce section labeled "VELG SAUS" with "OBLIGATORISK" badge
+- Options: Mild, Medium, Sterk, Uten saus — radio select
+- "TA BORT" (removals), "EKSTRA", "LEGG TIL" — collapsible sections
+- Add to cart button disabled until required fields filled
+- Show running price total in button: "Legg til — kr 164,-"
+
+## Cart store (Zustand) shape:
+```ts
+interface CartStore {
+  locationId: string | null
+  items: CartItem[]
+  addItem: (item: CartItem) => void
+  removeItem: (id: string) => void
+  updateQty: (id: string, qty: number) => void
+  clearCart: () => void
+  discountCode: string | null
+  applyDiscount: (code: string) => Promise<void>
+}
+```
+
+## API route pattern:
+```ts
+// Always validate with Zod
+// Always return { data, error } shape
+// Use Neon serverless driver — not pg Pool (stateless edge-compatible)
+import { neon } from '@neondatabase/serverless'
+const sql = neon(process.env.DATABASE_URL!)
+```
+
+## Step Indicator:
+- 3 steps: 1 = Meny, 2 = Informasjon, 3 = Betaling
+- Active step: gold filled circle
+- Completed step: gold with checkmark
+- Future step: grey outlined circle
+- Connected by a line that fills gold as steps complete
