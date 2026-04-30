@@ -19,7 +19,10 @@ export const orderStatusEnum = pgEnum("order_status", [
   "levert",
 ]);
 
-export const deliveryTypeEnum = pgEnum("delivery_type", ["henting", "levering"]);
+export const deliveryTypeEnum = pgEnum("delivery_type", [
+  "henting",
+  "levering",
+]);
 export const modifierTypeEnum = pgEnum("modifier_type", [
   "sauce",
   "remove",
@@ -64,7 +67,9 @@ export const itemVariants = pgTable("item_variants", {
     .notNull()
     .references(() => menuItems.id, { onDelete: "cascade" }),
   label: varchar("label", { length: 80 }).notNull(),
-  priceDelta: numeric("price_delta", { precision: 10, scale: 2 }).notNull().default("0"),
+  priceDelta: numeric("price_delta", { precision: 10, scale: 2 })
+    .notNull()
+    .default("0"),
 });
 
 export const itemModifiers = pgTable("item_modifiers", {
@@ -74,7 +79,9 @@ export const itemModifiers = pgTable("item_modifiers", {
     .references(() => menuItems.id, { onDelete: "cascade" }),
   type: modifierTypeEnum("type").notNull(),
   label: varchar("label", { length: 120 }).notNull(),
-  priceDelta: numeric("price_delta", { precision: 10, scale: 2 }).notNull().default("0"),
+  priceDelta: numeric("price_delta", { precision: 10, scale: 2 })
+    .notNull()
+    .default("0"),
   isRequired: boolean("is_required").notNull().default(false),
 });
 

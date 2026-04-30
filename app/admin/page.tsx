@@ -25,18 +25,31 @@ export default function AdminPage() {
       <h1 className="font-display text-5xl uppercase tracking-[0.1em] text-[var(--color-gold)]">
         Admin - Innkommende ordre
       </h1>
-      <p className="text-sm text-[var(--color-muted)]">Oppdateres hvert 30. sekund.</p>
+      <p className="text-sm text-[var(--color-muted)]">
+        Oppdateres hvert 30. sekund.
+      </p>
       {incomingOrders.map((order) => (
-        <article key={order.id} className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] p-4">
+        <article
+          key={order.id}
+          className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] p-4"
+        >
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="font-display text-2xl uppercase tracking-[0.08em]">Ordre #{order.id}</p>
-            <p className="text-sm text-[var(--color-muted)]">{order.createdAt}</p>
+            <p className="font-display text-2xl uppercase tracking-[0.08em]">
+              Ordre #{order.id}
+            </p>
+            <p className="text-sm text-[var(--color-muted)]">
+              {order.createdAt}
+            </p>
           </div>
           <p className="text-sm">
             {order.customer} - {order.phone} - {order.deliveryType}
           </p>
-          <p className="text-sm text-[var(--color-muted)]">{order.items.join(", ")}</p>
-          <p className="mt-2 font-display text-xl uppercase tracking-[0.08em]">Totalt kr {order.total},-</p>
+          <p className="text-sm text-[var(--color-muted)]">
+            {order.items.join(", ")}
+          </p>
+          <p className="mt-2 font-display text-xl uppercase tracking-[0.08em]">
+            Totalt kr {order.total},-
+          </p>
           <div className="mt-3 flex flex-wrap gap-2">
             {["Mottatt", "Forberedes", "Klar", "Levert"].map((status) => (
               <button

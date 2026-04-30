@@ -18,9 +18,13 @@ export async function GET(request: NextRequest) {
   const grouped = categoryNames.map((category) => ({
     category,
     items: mockMenuItems.filter(
-      (item) => item.location === parsed.data.location && item.category === category,
+      (item) =>
+        item.location === parsed.data.location && item.category === category,
     ),
   }));
 
-  return NextResponse.json({ location: parsed.data.location, categories: grouped });
+  return NextResponse.json({
+    location: parsed.data.location,
+    categories: grouped,
+  });
 }

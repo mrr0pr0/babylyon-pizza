@@ -45,23 +45,35 @@ export function ItemModal({
       <div className="w-full max-w-xl rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
         <div className="mb-5 flex items-start justify-between">
           <div>
-            <h3 className="font-display text-3xl uppercase tracking-[0.08em]">{name}</h3>
+            <h3 className="font-display text-3xl uppercase tracking-[0.08em]">
+              {name}
+            </h3>
             <p className="text-sm text-[var(--color-muted)]">{description}</p>
             <p className="mt-1 text-xs uppercase tracking-[0.12em] text-[var(--color-muted)]">
               Allergener: {allergens.join(", ") || "Ingen oppgitt"}
             </p>
           </div>
-          <button type="button" onClick={onClose} className="text-sm text-[var(--color-muted)]">
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-sm text-[var(--color-muted)]"
+          >
             Lukk
           </button>
         </div>
 
         <section className="space-y-2">
           <p className="font-display text-lg uppercase tracking-[0.08em]">
-            Velg saus <span className="rounded bg-[var(--color-gold)] px-2 py-1 text-black">Obligatorisk</span>
+            Velg saus{" "}
+            <span className="rounded bg-[var(--color-gold)] px-2 py-1 text-black">
+              Obligatorisk
+            </span>
           </p>
           {sauceOptions.map((option) => (
-            <label key={option.id} className="flex cursor-pointer items-center gap-2 text-sm">
+            <label
+              key={option.id}
+              className="flex cursor-pointer items-center gap-2 text-sm"
+            >
               <input
                 type="radio"
                 name="sauce"

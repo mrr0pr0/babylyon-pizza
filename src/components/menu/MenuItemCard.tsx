@@ -27,12 +27,20 @@ export function MenuItemCard({
       <div className="h-40 w-full bg-[var(--color-border)]">
         {imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={imageUrl} alt={name} className="h-full w-full object-cover" />
+          <img
+            src={imageUrl}
+            alt={name}
+            className="h-full w-full object-cover"
+          />
         ) : null}
       </div>
       <div className="space-y-3 p-4">
-        <h3 className="font-display text-2xl uppercase tracking-[0.08em]">{name}</h3>
-        <p className="line-clamp-2 text-sm text-[var(--color-muted)]">{description}</p>
+        <h3 className="font-display text-2xl uppercase tracking-[0.08em]">
+          {name}
+        </h3>
+        <p className="line-clamp-2 text-sm text-[var(--color-muted)]">
+          {description}
+        </p>
         <div className="flex items-center justify-between">
           <p className="font-display text-xl uppercase tracking-[0.08em] text-[var(--color-gold)]">
             Fra kr {fromPrice},-

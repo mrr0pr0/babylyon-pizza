@@ -8,7 +8,8 @@ import { categoryNames, mockMenuItems } from "@/src/lib/mock-data";
 import { useCartStore } from "@/src/lib/store/cart";
 
 export function LocationMenuPageClient({ location }: { location: string }) {
-  const [selectedCategory, setSelectedCategory] = useState<(typeof categoryNames)[number]>("Kebab");
+  const [selectedCategory, setSelectedCategory] =
+    useState<(typeof categoryNames)[number]>("Kebab");
   const [activeItemId, setActiveItemId] = useState<number | null>(null);
   const { addItem, setLocation } = useCartStore();
 
@@ -19,7 +20,8 @@ export function LocationMenuPageClient({ location }: { location: string }) {
   const visibleItems = mockMenuItems.filter(
     (item) => item.location === location && item.category === selectedCategory,
   );
-  const activeItem = mockMenuItems.find((item) => item.id === activeItemId) ?? null;
+  const activeItem =
+    mockMenuItems.find((item) => item.id === activeItemId) ?? null;
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[3fr_1fr]">
@@ -29,7 +31,9 @@ export function LocationMenuPageClient({ location }: { location: string }) {
             <h1 className="font-display text-4xl uppercase tracking-[0.1em] text-[var(--color-gold)]">
               Babylon {location}
             </h1>
-            <p className="text-sm text-[var(--color-muted)]">Telefon: +47 40 00 00 00</p>
+            <p className="text-sm text-[var(--color-muted)]">
+              Telefon: +47 40 00 00 00
+            </p>
           </div>
           <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
             {categoryNames.map((category) => (

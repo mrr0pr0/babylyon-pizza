@@ -24,7 +24,9 @@ export function StepIndicator({ step }: StepIndicatorProps) {
             <span className="hidden text-xs uppercase tracking-[0.12em] text-[var(--color-muted)] sm:inline">
               {label}
             </span>
-            {current < 3 ? <div className="h-px flex-1 bg-[var(--color-border)]" /> : null}
+            {current < 3 ? (
+              <div className="h-px flex-1 bg-[var(--color-border)]" />
+            ) : null}
           </div>
         );
       })}

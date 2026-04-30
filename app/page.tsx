@@ -7,16 +7,26 @@ export default function Home() {
         Babylon Pizza
       </h1>
       <p className="max-w-lg text-[var(--color-muted)]">
-        Dette prosjektet inneholder kun bestillingssystemet. Velg avdeling for a starte bestilling.
+        Dette prosjektet inneholder kun bestillingssystemet. Velg avdeling for a
+        starte bestilling.
       </p>
       <div className="flex flex-wrap items-center justify-center gap-3">
-        <Link href="/as" className="rounded-md bg-[var(--color-gold)] px-6 py-3 text-black">
+        <Link
+          href="/as"
+          className="rounded-md bg-[var(--color-gold)] px-6 py-3 text-black"
+        >
           Bestill As
         </Link>
-        <Link href="/vestby" className="rounded-md bg-[var(--color-gold)] px-6 py-3 text-black">
+        <Link
+          href="/vestby"
+          className="rounded-md bg-[var(--color-gold)] px-6 py-3 text-black"
+        >
           Bestill Vestby
         </Link>
-        <Link href="/drobak" className="rounded-md bg-[var(--color-gold)] px-6 py-3 text-black">
+        <Link
+          href="/drobak"
+          className="rounded-md bg-[var(--color-gold)] px-6 py-3 text-black"
+        >
           Bestill Drobak
         </Link>
       </div>

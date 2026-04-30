@@ -9,7 +9,10 @@ const paramsSchema = z.object({
   id: z.coerce.number().int().positive(),
 });
 
-export async function PATCH(request: Request, context: { params: Promise<{ id: string }> }) {
+export async function PATCH(
+  request: Request,
+  context: { params: Promise<{ id: string }> },
+) {
   const params = paramsSchema.safeParse(await context.params);
   if (!params.success) {
     return NextResponse.json({ error: "Ugyldig ordre-ID." }, { status: 400 });

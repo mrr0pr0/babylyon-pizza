@@ -24,7 +24,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="no" className={`${bebasNeue.variable} ${dmSans.variable} h-full antialiased`}>
+    <html
+      lang="no"
+      className={`${bebasNeue.variable} ${dmSans.variable} h-full antialiased`}
+    >
       <body className="min-h-full">{children}</body>
     </html>
   );

@@ -34,7 +34,9 @@ const confirmLocationSwitch = () => {
     return true;
   }
 
-  return window.confirm("Bytte av avdeling tømmer handlekurven. Vil du fortsette?");
+  return window.confirm(
+    "Bytte av avdeling tømmer handlekurven. Vil du fortsette?",
+  );
 };
 
 export const useCartStore = create<CartState>()(
@@ -69,7 +71,9 @@ export const useCartStore = create<CartState>()(
           if (existing) {
             return {
               items: state.items.map((entry) =>
-                entry.id === item.id ? { ...entry, quantity: entry.quantity + item.quantity } : entry,
+                entry.id === item.id
+                  ? { ...entry, quantity: entry.quantity + item.quantity }
+                  : entry,
               ),
             };
           }
@@ -77,12 +81,18 @@ export const useCartStore = create<CartState>()(
         });
       },
       removeItem: (id) => {
-        set((state) => ({ items: state.items.filter((entry) => entry.id !== id) }));
+        set((state) => ({
+          items: state.items.filter((entry) => entry.id !== id),
+        }));
       },
       updateQty: (id, qty) => {
         set((state) => ({
           items: state.items
-            .map((entry) => (entry.id === id ? { ...entry, quantity: Math.max(qty, 1) } : entry))
+            .map((entry) =>
+              entry.id === id
+                ? { ...entry, quantity: Math.max(qty, 1) }
+                : entry,
+            )
             .filter((entry) => entry.quantity > 0),
         }));
       },
@@ -92,7 +102,11 @@ export const useCartStore = create<CartState>()(
       applyDiscount: (code, amount) => {
         set({ discountCode: code, discountAmount: Math.max(0, amount) });
       },
-      getSubtotal: () => get().items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
+      getSubtotal: () =>
+        get().items.reduce(
+          (sum, item) => sum + item.unitPrice * item.quantity,
+          0,
+        ),
       getTotal: () => Math.max(0, get().getSubtotal() - get().discountAmount),
     }),
     {
