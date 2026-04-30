@@ -33,6 +33,16 @@ async function createSchema() {
   `;
 
   await sql`
+    CREATE TABLE IF NOT EXISTS location_hours (
+      id SERIAL PRIMARY KEY,
+      location_id INTEGER NOT NULL REFERENCES locations(id) ON DELETE CASCADE,
+      day_of_week INTEGER NOT NULL,
+      open_time TEXT NOT NULL,
+      close_time TEXT NOT NULL
+    );
+  `;
+
+  await sql`
     CREATE TABLE IF NOT EXISTS menu_items (
       id SERIAL PRIMARY KEY,
       name TEXT NOT NULL,
@@ -116,6 +126,7 @@ async function resetData() {
       menu_items,
       customers,
       categories,
+      location_hours,
       locations
     RESTART IDENTITY CASCADE;
   `;
@@ -144,6 +155,32 @@ async function seed() {
     console.log(
       `✓ Created locations: ${locationsResult.map((l) => l.name).join(", ")}`,
     );
+
+    // Seed location hours
+    console.log("⏰ Seeding location hours...");
+    await sql`
+      INSERT INTO location_hours (location_id, day_of_week, open_time, close_time)
+      VALUES 
+        -- Babylon Ås hours (Monday-Friday)
+        (${asLocationId}, 0, '11:00', '22:00'),
+        (${asLocationId}, 1, '11:00', '22:00'),
+        (${asLocationId}, 2, '11:00', '22:00'),
+        (${asLocationId}, 3, '11:00', '22:00'),
+        (${asLocationId}, 4, '11:00', '23:00'),
+        -- Saturday and Sunday
+        (${asLocationId}, 5, '12:00', '23:00'),
+        (${asLocationId}, 6, '12:00', '22:00'),
+        -- Babylon Vestby hours (Monday-Friday)
+        (${vestbyLocationId}, 0, '10:00', '21:00'),
+        (${vestbyLocationId}, 1, '10:00', '21:00'),
+        (${vestbyLocationId}, 2, '10:00', '21:00'),
+        (${vestbyLocationId}, 3, '10:00', '21:00'),
+        (${vestbyLocationId}, 4, '10:00', '22:00'),
+        -- Saturday and Sunday
+        (${vestbyLocationId}, 5, '11:00', '22:00'),
+        (${vestbyLocationId}, 6, '11:00', '21:00')
+    `;
+    console.log("✓ Created location hours");
 
     // Seed categories
     console.log("📂 Seeding categories...");

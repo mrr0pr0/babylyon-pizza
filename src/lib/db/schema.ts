@@ -39,6 +39,16 @@ export const locations = pgTable("locations", {
   isActive: boolean("is_active").notNull().default(true),
 });
 
+export const locationHours = pgTable("location_hours", {
+  id: serial("id").primaryKey(),
+  locationId: integer("location_id")
+    .notNull()
+    .references(() => locations.id, { onDelete: "cascade" }),
+  dayOfWeek: integer("day_of_week").notNull(), // 0 = Monday, 6 = Sunday
+  openTime: varchar("open_time", { length: 5 }).notNull(), // HH:MM format
+  closeTime: varchar("close_time", { length: 5 }).notNull(), // HH:MM format
+});
+
 export const categories = pgTable("categories", {
   id: serial("id").primaryKey(),
   name: varchar("name", { length: 120 }).notNull(),
@@ -132,4 +142,5 @@ export const categoryRelations = relations(categories, ({ many }) => ({
 export const locationRelations = relations(locations, ({ many }) => ({
   menuItems: many(menuItems),
   orders: many(orders),
+  hours: many(locationHours),
 }));

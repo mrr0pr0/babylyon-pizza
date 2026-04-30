@@ -4,24 +4,82 @@ import { useEffect, useState } from "react";
 import { CartSidebar } from "@/src/components/cart/CartSidebar";
 import { MenuItemCard } from "@/src/components/menu/MenuItemCard";
 import { ItemModal } from "@/src/components/menu/ItemModal";
-import { categoryNames, mockMenuItems } from "@/src/lib/mock-data";
 import { useCartStore } from "@/src/lib/store/cart";
 
+interface MenuItem {
+  id: number;
+  name: string;
+  description: string;
+  fromPrice: number;
+  category: string;
+  location: string;
+  allergens: string[];
+}
+
+interface LocationHour {
+  day: string;
+  dayOfWeek: number;
+  openTime: string;
+  closeTime: string;
+}
+
+interface MenuData {
+  location: string;
+  categories: Array<{
+    category: string;
+    items: MenuItem[];
+  }>;
+  hours: LocationHour[];
+}
+
 export function LocationMenuPageClient({ location }: { location: string }) {
-  const [selectedCategory, setSelectedCategory] =
-    useState<(typeof categoryNames)[number]>("Kebab");
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [activeItemId, setActiveItemId] = useState<number | null>(null);
+  const [menuData, setMenuData] = useState<MenuData | null>(null);
+  const [loading, setLoading] = useState(true);
   const { addItem, setLocation } = useCartStore();
 
   useEffect(() => {
     setLocation(location, true);
   }, [location, setLocation]);
 
-  const visibleItems = mockMenuItems.filter(
-    (item) => item.location === location && item.category === selectedCategory,
-  );
+  useEffect(() => {
+    const fetchMenuData = async () => {
+      try {
+        const response = await fetch(`/api/menu?location=${location}`);
+        const data = await response.json();
+        setMenuData(data);
+        // Set first category as default
+        if (data.categories && data.categories.length > 0) {
+          setSelectedCategory(data.categories[0].category);
+        }
+      } catch (error) {
+        console.error("Error fetching menu data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMenuData();
+  }, [location]);
+
+  if (loading || !menuData) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <p className="text-[var(--color-muted)]">Laster meny...</p>
+      </div>
+    );
+  }
+
+  const visibleItems =
+    menuData.categories
+      .find((cat) => cat.category === selectedCategory)
+      ?.items || [];
+
   const activeItem =
-    mockMenuItems.find((item) => item.id === activeItemId) ?? null;
+    menuData.categories
+      .flatMap((cat) => cat.items)
+      .find((item) => item.id === activeItemId) || null;
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[3fr_1fr]">
@@ -35,19 +93,39 @@ export function LocationMenuPageClient({ location }: { location: string }) {
               Telefon: +47 40 00 00 00
             </p>
           </div>
+
+          {/* Display hours */}
+          {menuData.hours && menuData.hours.length > 0 && (
+            <div className="mt-3 rounded bg-black/50 p-3">
+              <p className="mb-2 text-xs font-semibold uppercase text-[var(--color-gold)]">
+                Åpningstider
+              </p>
+              <div className="grid grid-cols-2 gap-2 text-xs text-[var(--color-muted)]">
+                {menuData.hours.map((hour) => (
+                  <div key={hour.dayOfWeek} className="flex justify-between">
+                    <span>{hour.day.substring(0, 3)}:</span>
+                    <span>
+                      {hour.openTime} - {hour.closeTime}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-            {categoryNames.map((category) => (
+            {menuData.categories.map((cat) => (
               <button
-                key={category}
+                key={cat.category}
                 type="button"
-                onClick={() => setSelectedCategory(category)}
+                onClick={() => setSelectedCategory(cat.category)}
                 className={`rounded-md border px-3 py-2 text-xs uppercase tracking-[0.12em] ${
-                  selectedCategory === category
+                  selectedCategory === cat.category
                     ? "border-[var(--color-gold)] bg-[var(--color-gold)] text-black"
                     : "border-[var(--color-border)] text-[var(--color-muted)]"
                 }`}
               >
-                {category}
+                {cat.category}
               </button>
             ))}
           </div>
@@ -60,7 +138,7 @@ export function LocationMenuPageClient({ location }: { location: string }) {
               id={item.id}
               name={item.name}
               description={item.description}
-              fromPrice={item.fromPrice}
+              fromPrice={parseFloat(item.fromPrice.toString())}
               onSelect={setActiveItemId}
             />
           ))}
@@ -80,14 +158,14 @@ export function LocationMenuPageClient({ location }: { location: string }) {
           name={activeItem.name}
           description={activeItem.description}
           allergens={activeItem.allergens}
-          basePrice={activeItem.fromPrice}
+          basePrice={parseFloat(activeItem.fromPrice.toString())}
           onClose={() => setActiveItemId(null)}
           onAddToCart={({ sauce, quantity }) => {
             addItem({
               id: `${activeItem.id}-${sauce}`,
               menuItemId: activeItem.id,
               name: activeItem.name,
-              unitPrice: activeItem.fromPrice,
+              unitPrice: parseFloat(activeItem.fromPrice.toString()),
               quantity,
               modifiers: { sauce: [sauce] },
             });
