@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { neon } from "@neondatabase/serverless";
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -8,10 +9,126 @@ if (!databaseUrl) {
 
 const sql = neon(databaseUrl);
 
+async function createSchema() {
+  console.log("🏗️  Creating schema (tables if not exist)...");
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS locations (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      slug TEXT NOT NULL UNIQUE,
+      phone TEXT,
+      address TEXT,
+      is_active BOOLEAN NOT NULL DEFAULT true,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS categories (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL UNIQUE,
+      sort_order INTEGER NOT NULL DEFAULT 0
+    );
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS menu_items (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      description TEXT,
+      base_price NUMERIC(10, 2) NOT NULL,
+      category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
+      location_id INTEGER REFERENCES locations(id) ON DELETE CASCADE,
+      allergens TEXT[] DEFAULT ARRAY[]::TEXT[],
+      is_available BOOLEAN NOT NULL DEFAULT true,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS item_variants (
+      id SERIAL PRIMARY KEY,
+      item_id INTEGER NOT NULL REFERENCES menu_items(id) ON DELETE CASCADE,
+      label TEXT NOT NULL,
+      price_delta NUMERIC(10, 2) NOT NULL DEFAULT 0
+    );
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS item_modifiers (
+      id SERIAL PRIMARY KEY,
+      item_id INTEGER NOT NULL REFERENCES menu_items(id) ON DELETE CASCADE,
+      type TEXT NOT NULL,
+      label TEXT NOT NULL,
+      price_delta NUMERIC(10, 2) NOT NULL DEFAULT 0,
+      is_required BOOLEAN NOT NULL DEFAULT false
+    );
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS customers (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT UNIQUE,
+      phone TEXT,
+      address TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS orders (
+      id SERIAL PRIMARY KEY,
+      location_id INTEGER REFERENCES locations(id) ON DELETE SET NULL,
+      customer_id INTEGER REFERENCES customers(id) ON DELETE SET NULL,
+      status TEXT NOT NULL DEFAULT 'mottatt',
+      delivery_type TEXT NOT NULL DEFAULT 'henting',
+      total NUMERIC(10, 2) NOT NULL DEFAULT 0,
+      discount_code TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+  `;
+
+  await sql`
+    CREATE TABLE IF NOT EXISTS order_items (
+      id SERIAL PRIMARY KEY,
+      order_id INTEGER NOT NULL REFERENCES orders(id) ON DELETE CASCADE,
+      menu_item_id INTEGER REFERENCES menu_items(id) ON DELETE SET NULL,
+      quantity INTEGER NOT NULL DEFAULT 1,
+      line_price NUMERIC(10, 2) NOT NULL,
+      modifiers JSONB NOT NULL DEFAULT '{}'::jsonb
+    );
+  `;
+
+  console.log("✓ Schema ready");
+}
+
+async function resetData() {
+  console.log("🧹 Clearing existing data (safe re-run)...");
+  // Order matters due to FKs. TRUNCATE ... RESTART IDENTITY resets SERIAL counters.
+  await sql`
+    TRUNCATE TABLE
+      order_items,
+      orders,
+      item_modifiers,
+      item_variants,
+      menu_items,
+      customers,
+      categories,
+      locations
+    RESTART IDENTITY CASCADE;
+  `;
+  console.log("✓ Cleared");
+}
+
 async function seed() {
   console.log("🌱 Starting database seed...");
 
   try {
+    await createSchema();
+    await resetData();
+
     // Seed locations
     console.log("📍 Seeding locations...");
     const locationsResult = await sql`
@@ -30,15 +147,6 @@ async function seed() {
 
     // Seed categories
     console.log("📂 Seeding categories...");
-    const categoryNames = [
-      "Kebab",
-      "Grill",
-      "Salater",
-      "Barnemeny",
-      "Pizza",
-      "Tilbehor",
-      "Drikke",
-    ];
     const categoriesResult = await sql`
       INSERT INTO categories (name, sort_order)
       VALUES 
@@ -87,7 +195,7 @@ async function seed() {
     console.log("✓ Created item variants");
 
     // Seed item modifiers
-    console.log("🌶️ Seeding item modifiers...");
+    console.log("🌶️  Seeding item modifiers...");
     await sql`
       INSERT INTO item_modifiers (item_id, type, label, price_delta, is_required)
       VALUES 
