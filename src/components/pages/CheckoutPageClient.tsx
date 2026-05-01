@@ -101,7 +101,7 @@ function CheckoutForm({ location }: { location: string }) {
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[3fr_1fr]">
-      <section className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] p-5">
+      <section className="order-2 rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] p-5 lg:order-1">
         <h1 className="font-display text-4xl uppercase tracking-[0.1em]">
           Steg 2 av 3 - Kasse
         </h1>
@@ -175,7 +175,9 @@ function CheckoutForm({ location }: { location: string }) {
         </div>
       </section>
 
-      <CartSidebar location={location} step={2} />
+      <div className="order-1 lg:order-2">
+        <CartSidebar location={location} step={2} />
+      </div>
     </div>
   );
 }

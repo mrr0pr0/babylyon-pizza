@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useEffect, useState, useMemo } from "react";
 import { CartSidebar } from "@/src/components/cart/CartSidebar";
 import { MenuItemCard } from "@/src/components/menu/MenuItemCard";
 import { ItemModal } from "@/src/components/menu/ItemModal";
@@ -37,7 +38,14 @@ export function LocationMenuPageClient({ location }: { location: string }) {
   const [activeItemId, setActiveItemId] = useState<number | null>(null);
   const [menuData, setMenuData] = useState<MenuData | null>(null);
   const [loading, setLoading] = useState(true);
-  const { addItem, setLocation } = useCartStore();
+  const { addItem, setLocation, items, discountAmount } = useCartStore();
+  
+  const total = useMemo(
+    () =>
+      items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0) -
+      discountAmount,
+    [discountAmount, items],
+  );
 
   useEffect(() => {
     setLocation(location, true);
@@ -82,14 +90,15 @@ export function LocationMenuPageClient({ location }: { location: string }) {
       .find((item) => item.id === activeItemId) || null;
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[3fr_1fr]">
+    <>
+    <div className="grid grid-cols-1 gap-6 pb-32 lg:grid-cols-[3fr_1fr] lg:pb-0">
       <div className="space-y-4">
         <header className="sticky top-0 z-20 rounded-md border border-[var(--color-border)] bg-black/95 p-4 backdrop-blur">
-          <div className="flex items-center justify-between">
-            <h1 className="font-display text-4xl uppercase tracking-[0.1em] text-[var(--color-gold)]">
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <h1 className="font-display text-2xl uppercase tracking-[0.1em] text-[var(--color-gold)] sm:text-3xl md:text-4xl">
               Babylon {location}
             </h1>
-            <p className="text-sm text-[var(--color-muted)]">
+            <p className="text-xs text-[var(--color-muted)] sm:text-sm">
               Telefon: +47 40 00 00 00
             </p>
           </div>
@@ -131,6 +140,10 @@ export function LocationMenuPageClient({ location }: { location: string }) {
           </div>
         </header>
 
+        <div className="lg:hidden">
+          <CartSidebar location={location} step={1} />
+        </div>
+
         <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
           {visibleItems.map((item) => (
             <MenuItemCard
@@ -143,10 +156,6 @@ export function LocationMenuPageClient({ location }: { location: string }) {
             />
           ))}
         </section>
-
-        <div className="lg:hidden">
-          <CartSidebar location={location} step={1} />
-        </div>
       </div>
       <div className="hidden lg:block">
         <CartSidebar location={location} step={1} />
@@ -174,5 +183,28 @@ export function LocationMenuPageClient({ location }: { location: string }) {
         />
       ) : null}
     </div>
+    
+    <footer className="fixed bottom-0 left-0 right-0 z-10 border-t border-[var(--color-border)] bg-[var(--color-surface)] p-4 lg:hidden">
+      <div className="mb-3 text-center">
+        <p className="font-display text-2xl uppercase tracking-[0.1em]">
+          Totalt: kr {Math.max(total, 0)},-
+        </p>
+      </div>
+      <div className="flex gap-2">
+        <Link
+          href={`/${location}`}
+          className="w-1/2 rounded bg-[var(--color-border)] px-3 py-2 text-center text-xs uppercase tracking-[0.12em]"
+        >
+          Tilbake
+        </Link>
+        <Link
+          href={`/${location}/checkout`}
+          className="w-1/2 rounded bg-[var(--color-gold)] px-3 py-2 text-center text-xs uppercase tracking-[0.12em] text-black"
+        >
+          Neste
+        </Link>
+      </div>
+    </footer>
+    </>
   );
 }
