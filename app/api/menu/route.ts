@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
     }));
 
     // Fetch location hours from database
-    let hours = [];
+    let hours: any[] = [];
     try {
       const result = await sql`
         SELECT 

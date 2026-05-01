@@ -195,10 +195,10 @@ async function seed() {
         ('Tilbehor', 6),
         ('Drikke', 7)
       RETURNING id, name;
-    `;
+    ` as { id: number; name: string }[];
 
     const categoryMap = Object.fromEntries(
-      categoriesResult.map((cat: { id: number; name: string }) => [
+      categoriesResult.map((cat) => [
         cat.name,
         cat.id,
       ]),

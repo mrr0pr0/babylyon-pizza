@@ -163,12 +163,12 @@ export async function POST(request: Request) {
     let resolvedLocationId = parsed.data.locationId;
 
     if (!resolvedLocationId && parsed.data.locationSlug) {
-      const locationResult = await sql<{ id: number }[]>`
+      const locationResult = await sql`
         SELECT id
         FROM locations
         WHERE slug = ${parsed.data.locationSlug}
         LIMIT 1
-      `;
+      ` as { id: number }[];
 
       if (!locationResult.length) {
         return NextResponse.json(
