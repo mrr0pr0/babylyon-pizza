@@ -3,7 +3,8 @@ import { z } from "zod";
 import { neon } from "@neondatabase/serverless";
 
 const createOrderSchema = z.object({
-  locationId: z.number().int().positive(),
+  locationId: z.number().int().positive().optional(),
+  locationSlug: z.string().min(1).optional(),
   customer: z.object({
     name: z.string().min(2),
     phone: z.string().min(6),
@@ -24,15 +25,14 @@ const createOrderSchema = z.object({
   total: z.number().nonnegative(),
   discountCode: z.string().optional(),
   discountAmount: z.number().nonnegative().optional(),
+}).refine((data) => Boolean(data.locationId || data.locationSlug), {
+  message: "Location id eller slug er påkrevd.",
+  path: ["locationId"],
 });
 
 const sql = neon(process.env.DATABASE_URL || "");
 
-async function sendSmsNotification(
-  phone: string,
-  orderNumber: string,
-  estimatedTime: string
-) {
+async function sendSmsNotification(phone: string, message: string) {
   try {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
@@ -44,7 +44,6 @@ async function sendSmsNotification(
     }
 
     const auth = Buffer.from(`${accountSid}:${authToken}`).toString("base64");
-    const message = `Babylon Pizza: Din ordre #${orderNumber} er mottatt! Estimert tid: ${estimatedTime}. Takk for din bestilling!`;
 
     const response = await fetch("https://api.twilio.com/2010-04-01/Accounts/" + accountSid + "/Messages.json", {
       method: "POST",
@@ -81,10 +80,42 @@ export async function POST(request: Request) {
   }
 
   try {
-    // Create or get customer
+    let resolvedLocationId = parsed.data.locationId;
+
+    if (!resolvedLocationId && parsed.data.locationSlug) {
+      const locationResult = await sql<{ id: number }[]>`
+        SELECT id
+        FROM locations
+        WHERE slug = ${parsed.data.locationSlug}
+        LIMIT 1
+      `;
+
+      if (!locationResult.length) {
+        return NextResponse.json(
+          { error: "Ugyldig lokasjon." },
+          { status: 400 },
+        );
+      }
+
+      resolvedLocationId = locationResult[0].id;
+    }
+
+    if (!resolvedLocationId) {
+      return NextResponse.json(
+        { error: "Ugyldig lokasjon." },
+        { status: 400 },
+      );
+    }
+
+    // Create or update customer by unique email
     const customerResult = await sql`
       INSERT INTO customers (name, email, phone, address)
       VALUES (${parsed.data.customer.name}, ${parsed.data.customer.email}, ${parsed.data.customer.phone}, ${parsed.data.customer.address || null})
+      ON CONFLICT (email)
+      DO UPDATE SET
+        name = EXCLUDED.name,
+        phone = EXCLUDED.phone,
+        address = EXCLUDED.address
       RETURNING id
     `;
     const customerId = customerResult[0].id;
@@ -96,17 +127,13 @@ export async function POST(request: Request) {
         customer_id,
         delivery_type,
         total,
-        discount_code,
-        discount_amount,
         status
       )
       VALUES (
-        ${parsed.data.locationId},
+        ${resolvedLocationId},
         ${customerId},
         ${parsed.data.deliveryType},
         ${parsed.data.total},
-        ${parsed.data.discountCode || null},
-        ${parsed.data.discountAmount || 0},
         'mottatt'
       )
       RETURNING id
@@ -136,18 +163,24 @@ export async function POST(request: Request) {
     // Format order number
     const orderNumber = String(orderId).padStart(5, "#");
     
-    // Send SMS notification
-    await sendSmsNotification(
-      parsed.data.customer.phone,
-      orderNumber,
-      "25-35 minutter"
-    );
+    const estimatedTime = "25-35 minutter";
+    const customerMessage = `Babylon Pizza: Din ordre #${orderNumber} er mottatt! Estimert tid: ${estimatedTime}. Takk for din bestilling!`;
+    const adminMessage = `Ny ordre ${orderNumber}: ${parsed.data.deliveryType}, totalt kr ${parsed.data.total}, kunde ${parsed.data.customer.name} (${parsed.data.customer.phone}).`;
+
+    // Customer SMS confirmation
+    await sendSmsNotification(parsed.data.customer.phone, customerMessage);
+
+    // Admin SMS alert (configured to same number as TWILIO_PHONE_NUMBER per request)
+    const adminPhone = process.env.TWILIO_PHONE_NUMBER;
+    if (adminPhone) {
+      await sendSmsNotification(adminPhone, adminMessage);
+    }
 
     return NextResponse.json({
       orderId: orderId,
       orderNumber: orderNumber,
       status: "mottatt",
-      estimatedTime: "25-35 minutter",
+      estimatedTime,
     });
   } catch (error) {
     console.error("Error creating order:", error);

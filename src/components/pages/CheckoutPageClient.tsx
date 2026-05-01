@@ -1,16 +1,22 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { CartSidebar } from "@/src/components/cart/CartSidebar";
 import { StripePaymentForm } from "@/src/components/checkout/StripePaymentForm";
 import { StripeProvider } from "@/src/components/checkout/StripeProvider";
 import { useCartStore } from "@/src/lib/store/cart";
 
 function CheckoutForm({ location }: { location: string }) {
+  const router = useRouter();
+  const debugPhoneNumber =
+    process.env.NEXT_PUBLIC_DEBUG_TEST_PHONE_NUMBER || "99999999";
+  const debugName = process.env.NEXT_PUBLIC_DEBUG_TEST_NAME || "Testkunde";
+  const debugEmail =
+    process.env.NEXT_PUBLIC_DEBUG_TEST_EMAIL || "test@babylon.local";
   const [deliveryType, setDeliveryType] = useState<"henting" | "levering">(
     "henting",
   );
-  const [paymentSucceeded, setPaymentSucceeded] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   
@@ -29,22 +35,32 @@ function CheckoutForm({ location }: { location: string }) {
     [discountAmount, items],
   );
 
-  const handlePaymentSuccess = async () => {
+  const handlePaymentSuccess = async (paymentIntentId?: string) => {
     setIsCreatingOrder(true);
     setOrderError(null);
 
     try {
+      const isDebugBypass = paymentIntentId === "pi_debug_test";
+      const customerName = name.trim() || (isDebugBypass ? debugName : "");
+      const customerPhone = phone.trim() || (isDebugBypass ? debugPhoneNumber : "");
+      const customerEmail = email.trim() || (isDebugBypass ? debugEmail : "");
+      const customerAddress =
+        deliveryType === "levering" ? address.trim() || undefined : undefined;
+
       // Create order with customer data and cart items
       const response = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          locationId: parseInt(location), // location should be a number
+          locationId: Number.isInteger(Number(location))
+            ? parseInt(location, 10)
+            : undefined,
+          locationSlug: location,
           customer: {
-            name,
-            phone,
-            email,
-            address: deliveryType === "levering" ? address : null,
+            name: customerName,
+            phone: customerPhone,
+            email: customerEmail,
+            address: customerAddress,
           },
           deliveryType,
           items: items.map((item) => ({
@@ -64,8 +80,16 @@ function CheckoutForm({ location }: { location: string }) {
         return;
       }
 
-      // Order created successfully and SMS will be sent by the server
-      setPaymentSucceeded(true);
+      const data = (await response.json()) as {
+        orderId?: number;
+      };
+
+      if (!data.orderId) {
+        setOrderError("Bestilling mangler ordrenummer.");
+        return;
+      }
+
+      router.push(`/${location}/confirmation?orderId=${data.orderId}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Feil ved opprettelse av bestilling";
       setOrderError(message);
@@ -74,19 +98,6 @@ function CheckoutForm({ location }: { location: string }) {
     }
   };
 
-
-  if (paymentSucceeded) {
-    return (
-      <div className="rounded-md border border-[var(--color-border)] bg-[var(--color-surface)] p-5 text-center">
-        <h2 className="font-display text-2xl uppercase tracking-[0.1em] text-[var(--color-gold)]">
-          Betaling vellykket!
-        </h2>
-        <p className="mt-2 text-[var(--color-muted)]">
-          Din ordre har blitt sendt. Du vil motta en SMS om estimert leveringstid.
-        </p>
-      </div>
-    );
-  }
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-[3fr_1fr]">
@@ -114,7 +125,6 @@ function CheckoutForm({ location }: { location: string }) {
             className="rounded border border-[var(--color-border)] bg-black/25 px-3 py-2 sm:col-span-2"
           />
         </div>
-
         <div className="mt-5 flex gap-2">
           <button
             type="button"

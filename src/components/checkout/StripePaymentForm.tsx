@@ -16,6 +16,9 @@ export function StripePaymentForm({
   onError,
   isLoading = false,
 }: StripePaymentFormProps) {
+  const showDebugBypass =
+    process.env.NODE_ENV !== "production" &&
+    process.env.NEXT_PUBLIC_DEBUG_BYPASS_PAYMENT === "true";
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
@@ -23,6 +26,11 @@ export function StripePaymentForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (amount <= 0) {
+      setError("Belopet ma vare storre enn 0.");
+      return;
+    }
 
     if (!stripe || !elements) {
       setError("Stripe har ikke lastet enda");
@@ -66,7 +74,7 @@ export function StripePaymentForm({
         return;
       }
 
-      // Confirm payment
+      // Confirm card payment client-side
       const { error: confirmError, paymentIntent } =
         await stripe.confirmCardPayment(data.clientSecret, {
           payment_method: paymentMethod.id,
@@ -76,24 +84,36 @@ export function StripePaymentForm({
         setError(confirmError.message || "Betalingen mislyktes");
         onError?.(confirmError.message || "Betalingen mislyktes");
       } else if (paymentIntent.status === "succeeded") {
-        setLoading(false);
         onSuccess?.(paymentIntent.id);
+      } else {
+        setError("Betalingen ble ikke fullfort.");
+        onError?.("Betalingen ble ikke fullfort.");
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Noe gikk galt";
       setError(message);
       onError?.(message);
     } finally {
-      if (loading) {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   };
 
-  const isFormDisabled = loading || isLoading || !stripe;
+  const isFormDisabled = loading || isLoading || !stripe || amount <= 0;
 
   return (
     <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+      {showDebugBypass ? (
+        <div className="rounded border border-[var(--color-border)] bg-black/20 p-3 text-xs text-[var(--color-muted)]">
+          <button
+            type="button"
+            onClick={() => onSuccess?.("pi_debug_test")}
+            className="rounded border border-[var(--color-gold)] bg-[var(--color-gold)] px-3 py-1 uppercase tracking-[0.12em] text-black"
+          >
+            Hopp over betaling (test)
+          </button>
+        </div>
+      ) : null}
+
       <div className="rounded border border-[var(--color-border)] bg-black/25 p-3">
         <CardElement
           options={{
@@ -124,7 +144,7 @@ export function StripePaymentForm({
         disabled={isFormDisabled}
         className="w-full rounded bg-[var(--color-gold)] px-4 py-2 text-xs uppercase tracking-[0.12em] text-black disabled:opacity-50"
       >
-        {loading ? "Behandler betaling..." : isLoading ? "Oppretter bestilling..." : "Betal nå"}
+        {loading ? "Behandler kortbetaling..." : isLoading ? "Oppretter bestilling..." : "Betal med kort"}
       </button>
     </form>
   );

@@ -106,14 +106,29 @@ export function CartSidebar({ location, step }: CartSidebarProps) {
           >
             Tilbake
           </Link>
-          <Link
-            href={
-              step === 1 ? `/${location}/checkout` : `/${location}/confirmation`
-            }
-            className="w-1/2 rounded bg-[var(--color-gold)] px-3 py-2 text-center text-xs uppercase tracking-[0.12em] text-black"
-          >
-            {step === 1 ? "Neste" : "Send inn ordre"}
-          </Link>
+          {step === 1 ? (
+            <Link
+              href={`/${location}/checkout`}
+              className="w-1/2 rounded bg-[var(--color-gold)] px-3 py-2 text-center text-xs uppercase tracking-[0.12em] text-black"
+            >
+              Neste
+            </Link>
+          ) : step === 2 ? (
+            <button
+              type="button"
+              disabled
+              className="w-1/2 cursor-not-allowed rounded bg-[var(--color-gold-dim)]/40 px-3 py-2 text-center text-xs uppercase tracking-[0.12em] text-[var(--color-muted)]"
+            >
+              Betal forst
+            </button>
+          ) : (
+            <Link
+              href={`/${location}`}
+              className="w-1/2 rounded bg-[var(--color-gold)] px-3 py-2 text-center text-xs uppercase tracking-[0.12em] text-black"
+            >
+              Ny ordre
+            </Link>
+          )}
         </div>
       </div>
     </aside>
