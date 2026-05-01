@@ -68,6 +68,86 @@ async function sendSmsNotification(phone: string, message: string) {
   }
 }
 
+type AdminOrderRow = {
+  id: number;
+  status: string;
+  delivery_type: string;
+  total: string;
+  created_at: string;
+  customer_name: string;
+  customer_phone: string;
+  location_slug: string;
+  items: Array<{ quantity: number; name: string }>;
+};
+
+export async function GET(request: Request) {
+  const url = new URL(request.url);
+  const locationSlug = url.searchParams.get("locationSlug");
+
+  try {
+    const rows = locationSlug
+      ? ((await sql`
+          SELECT o.id,
+                 o.status,
+                 o.delivery_type,
+                 o.total,
+                 o.created_at,
+                 c.name AS customer_name,
+                 c.phone AS customer_phone,
+                 l.slug AS location_slug,
+                 COALESCE(
+                   json_agg(
+                     json_build_object('quantity', oi.quantity, 'name', mi.name)
+                     ORDER BY oi.id
+                   ) FILTER (WHERE oi.id IS NOT NULL),
+                   '[]'
+                 ) AS items
+          FROM orders o
+          JOIN customers c ON c.id = o.customer_id
+          JOIN locations l ON l.id = o.location_id
+          LEFT JOIN order_items oi ON oi.order_id = o.id
+          LEFT JOIN menu_items mi ON mi.id = oi.menu_item_id
+          WHERE l.slug = ${locationSlug}
+          GROUP BY o.id, c.name, c.phone, l.slug
+          ORDER BY o.created_at DESC
+          LIMIT 50
+        `) as AdminOrderRow[])
+      : ((await sql`
+          SELECT o.id,
+                 o.status,
+                 o.delivery_type,
+                 o.total,
+                 o.created_at,
+                 c.name AS customer_name,
+                 c.phone AS customer_phone,
+                 l.slug AS location_slug,
+                 COALESCE(
+                   json_agg(
+                     json_build_object('quantity', oi.quantity, 'name', mi.name)
+                     ORDER BY oi.id
+                   ) FILTER (WHERE oi.id IS NOT NULL),
+                   '[]'
+                 ) AS items
+          FROM orders o
+          JOIN customers c ON c.id = o.customer_id
+          JOIN locations l ON l.id = o.location_id
+          LEFT JOIN order_items oi ON oi.order_id = o.id
+          LEFT JOIN menu_items mi ON mi.id = oi.menu_item_id
+          GROUP BY o.id, c.name, c.phone, l.slug
+          ORDER BY o.created_at DESC
+          LIMIT 50
+        `) as AdminOrderRow[]);
+
+    return NextResponse.json({ orders: rows });
+  } catch (error) {
+    console.error("Error fetching orders:", error);
+    return NextResponse.json(
+      { error: "Feil ved henting av bestillinger." },
+      { status: 500 },
+    );
+  }
+}
+
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const parsed = createOrderSchema.safeParse(body);
