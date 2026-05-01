@@ -99,7 +99,7 @@ export function LocationMenuPageClient({ location }: { location: string }) {
               Babylon {location}
             </h1>
             <p className="text-xs text-[var(--color-muted)] sm:text-sm">
-              Telefon: +47 40 00 00 00
+              Telefon: +47 64 94 04 00  
             </p>
           </div>
 
