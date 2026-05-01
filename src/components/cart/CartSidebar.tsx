@@ -95,42 +95,37 @@ export function CartSidebar({ location, step }: CartSidebarProps) {
         </button>
       </div>
 
-      <div className="mt-4 border-t border-[var(--color-border)] pt-4">
-        <p className="font-display text-2xl uppercase tracking-[0.1em]">
-          Totalt: kr {Math.max(total, 0)},-
-        </p>
-        <div className="mt-3 flex gap-2">
-          <Link
-            href={`/${location}`}
-            className="w-1/2 rounded bg-[var(--color-border)] px-3 py-2 text-center text-xs uppercase tracking-[0.12em]"
-          >
-            Tilbake
-          </Link>
-          {step === 1 ? (
-            <Link
-              href={`/${location}/checkout`}
-              className="w-1/2 rounded bg-[var(--color-gold)] px-3 py-2 text-center text-xs uppercase tracking-[0.12em] text-black"
-            >
-              Neste
-            </Link>
-          ) : step === 2 ? (
-            <button
-              type="button"
-              disabled
-              className="w-1/2 cursor-not-allowed rounded bg-[var(--color-gold-dim)]/40 px-3 py-2 text-center text-xs uppercase tracking-[0.12em] text-[var(--color-muted)]"
-            >
-              Betal forst
-            </button>
-          ) : (
+      {step !== 1 && (
+        <div className="mt-4 border-t border-[var(--color-border)] pt-4">
+          <p className="font-display text-2xl uppercase tracking-[0.1em]">
+            Totalt: kr {Math.max(total, 0)},-
+          </p>
+          <div className="mt-3 flex gap-2">
             <Link
               href={`/${location}`}
-              className="w-1/2 rounded bg-[var(--color-gold)] px-3 py-2 text-center text-xs uppercase tracking-[0.12em] text-black"
+              className="w-1/2 rounded bg-[var(--color-border)] px-3 py-2 text-center text-xs uppercase tracking-[0.12em]"
             >
-              Ny ordre
+              Tilbake
             </Link>
-          )}
+            {step === 2 ? (
+              <button
+                type="button"
+                disabled
+                className="w-1/2 cursor-not-allowed rounded bg-[var(--color-gold-dim)]/40 px-3 py-2 text-center text-xs uppercase tracking-[0.12em] text-[var(--color-muted)]"
+              >
+                Betal forst
+              </button>
+            ) : (
+              <Link
+                href={`/${location}`}
+                className="w-1/2 rounded bg-[var(--color-gold)] px-3 py-2 text-center text-xs uppercase tracking-[0.12em] text-black"
+              >
+                Ny ordre
+              </Link>
+            )}
+          </div>
         </div>
-      </div>
+      )}
     </aside>
   );
 }
