@@ -91,7 +91,7 @@ export function LocationMenuPageClient({ location }: { location: string }) {
 
   return (
     <>
-    <div className="grid grid-cols-1 gap-6 pb-32 lg:grid-cols-[3fr_1fr] lg:pb-0">
+    <div className="grid grid-cols-1 gap-6 pb-32 lg:grid-cols-[3fr_1fr]">
       <div className="space-y-4">
         <header className="sticky top-0 z-20 rounded-md border border-[var(--color-border)] bg-black/95 p-4 backdrop-blur">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -184,7 +184,7 @@ export function LocationMenuPageClient({ location }: { location: string }) {
       ) : null}
     </div>
     
-    <footer className="fixed bottom-0 left-0 right-0 z-10 border-t border-[var(--color-border)] bg-[var(--color-surface)] p-4 lg:hidden">
+    <footer className="fixed bottom-0 left-0 right-0 z-10 border-t border-[var(--color-border)] bg-[var(--color-surface)] p-4 lg:static lg:mt-4 lg:border lg:rounded-md lg:p-4 lg:bg-[var(--color-surface)]">
       <div className="mb-3 text-center">
         <p className="font-display text-2xl uppercase tracking-[0.1em]">
           Totalt: kr {Math.max(total, 0)},-
