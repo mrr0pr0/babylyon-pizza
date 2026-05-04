@@ -42,6 +42,18 @@ export function CartSidebar({ location, step }: CartSidebarProps) {
             <p className="font-display text-lg uppercase tracking-[0.08em]">
               {item.name}
             </p>
+            {Object.entries(item.modifiers)
+              .filter(([, values]) => values.length > 0)
+              .map(([type, values]) => (
+                <p key={type} className="mt-1 text-xs text-[var(--color-muted)]">
+                  {type}: {values.join(", ")}
+                </p>
+              ))}
+            {item.note ? (
+              <p className="mt-1 text-xs italic text-[var(--color-muted)]">
+                Notat: {item.note}
+              </p>
+            ) : null}
             <div className="mt-1 flex items-center justify-between text-sm">
               <div className="flex items-center gap-2">
                 <button

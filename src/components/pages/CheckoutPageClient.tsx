@@ -68,6 +68,7 @@ function CheckoutForm({ location }: { location: string }) {
             quantity: item.quantity,
             linePrice: item.unitPrice * item.quantity,
             modifiers: item.modifiers || {},
+            note: item.note,
           })),
           total: Math.max(total, 0),
         }),

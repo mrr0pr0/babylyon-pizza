@@ -7,6 +7,14 @@ import { MenuItemCard } from "@/src/components/menu/MenuItemCard";
 import { ItemModal } from "@/src/components/menu/ItemModal";
 import { useCartStore } from "@/src/lib/store/cart";
 
+interface Modifier {
+  id: number;
+  type: string;
+  label: string;
+  priceDelta: number;
+  isRequired: boolean;
+}
+
 interface MenuItem {
   id: number;
   name: string;
@@ -16,6 +24,7 @@ interface MenuItem {
   category: string;
   location: string;
   allergens: string[];
+  modifiers: Modifier[];
 }
 
 interface LocationHour {
@@ -170,15 +179,24 @@ export function LocationMenuPageClient({ location }: { location: string }) {
           description={activeItem.description}
           allergens={activeItem.allergens}
           basePrice={parseFloat(activeItem.fromPrice.toString())}
+          imageUrl={activeItem.imageUrl}
+          modifiers={activeItem.modifiers}
           onClose={() => setActiveItemId(null)}
-          onAddToCart={({ sauce, quantity }) => {
+          onAddToCart={({ modifiers, quantity, unitPrice, note }) => {
+            const modifierSuffix = Object.values(modifiers)
+              .flat()
+              .join("-")
+              .replace(/\s+/g, "-");
+            const noteSuffix = note ? note.replace(/\s+/g, "-") : "";
+
             addItem({
-              id: `${activeItem.id}-${sauce}`,
+              id: `${activeItem.id}-${modifierSuffix || "base"}${noteSuffix ? `-${noteSuffix}` : ""}`,
               menuItemId: activeItem.id,
               name: activeItem.name,
-              unitPrice: parseFloat(activeItem.fromPrice.toString()),
+              unitPrice,
               quantity,
-              modifiers: { sauce: [sauce] },
+              modifiers,
+              note,
             });
             setActiveItemId(null);
           }}
