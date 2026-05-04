@@ -12,6 +12,7 @@ interface MenuItem {
   name: string;
   description: string;
   fromPrice: number;
+  imageUrl?: string | null;
   category: string;
   location: string;
   allergens: string[];
@@ -91,7 +92,7 @@ export function LocationMenuPageClient({ location }: { location: string }) {
 
   return (
     <>
-    <div className="grid grid-cols-1 gap-6 pb-32 lg:grid-cols-[3fr_1fr]">
+    <div className="grid grid-cols-1 gap-6 pb-36 lg:grid-cols-[3fr_1fr]">
       <div className="space-y-4">
         <header className="sticky top-0 z-20 rounded-md border border-[var(--color-border)] bg-black/95 p-4 backdrop-blur">
           <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
@@ -152,6 +153,7 @@ export function LocationMenuPageClient({ location }: { location: string }) {
               name={item.name}
               description={item.description}
               fromPrice={parseFloat(item.fromPrice.toString())}
+              imageUrl={item.imageUrl}
               onSelect={setActiveItemId}
             />
           ))}
@@ -184,25 +186,27 @@ export function LocationMenuPageClient({ location }: { location: string }) {
       ) : null}
     </div>
     
-    <footer className="fixed bottom-0 left-0 right-0 z-10 border-t border-[var(--color-border)] bg-[var(--color-surface)] p-4 lg:static lg:mt-4 lg:border lg:rounded-md lg:p-4 lg:bg-[var(--color-surface)]">
-      <div className="mb-3 text-center">
-        <p className="font-display text-2xl uppercase tracking-[0.1em]">
-          Totalt: kr {Math.max(total, 0)},-
-        </p>
-      </div>
-      <div className="flex gap-2">
-        <Link
-          href={`/${location}`}
-          className="w-1/2 rounded bg-[var(--color-border)] px-3 py-2 text-center text-xs uppercase tracking-[0.12em]"
-        >
-          Tilbake
-        </Link>
-        <Link
-          href={`/${location}/checkout`}
-          className="w-1/2 rounded bg-[var(--color-gold)] px-3 py-2 text-center text-xs uppercase tracking-[0.12em] text-black"
-        >
-          Neste
-        </Link>
+    <footer className="fixed bottom-0 left-0 right-0 z-20 border-t border-[var(--color-border)] bg-black/90 px-4 py-4 shadow-[0_0_30px_rgba(0,0,0,0.35)] backdrop-blur-lg">
+      <div className="mx-auto flex max-w-6xl flex-col gap-3 sm:gap-4">
+        <div className="flex flex-col items-center justify-between gap-3 sm:flex-row sm:gap-4">
+          <p className="font-display text-lg uppercase tracking-[0.1em] text-white sm:text-xl">
+            Totalt: kr {Math.max(total, 0)},-
+          </p>
+          <div className="flex w-full flex-col gap-2 sm:flex-row sm:w-auto">
+            <Link
+              href={`/${location}`}
+              className="inline-flex w-full items-center justify-center rounded border border-[var(--color-border)] bg-black/60 px-4 py-3 text-sm uppercase tracking-[0.12em] text-white transition hover:bg-black sm:w-1/2"
+            >
+              Tilbake
+            </Link>
+            <Link
+              href={`/${location}/checkout`}
+              className="inline-flex w-full items-center justify-center rounded bg-[var(--color-gold)] px-4 py-3 text-sm uppercase tracking-[0.12em] text-black transition hover:bg-[#f5c200] sm:w-1/2"
+            >
+              Neste
+            </Link>
+          </div>
+        </div>
       </div>
     </footer>
     </>
