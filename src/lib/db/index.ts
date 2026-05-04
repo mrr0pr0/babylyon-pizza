@@ -5,7 +5,7 @@ import * as schema from "@/src/lib/db/schema";
 const databaseUrl = process.env.DATABASE_URL;
 
 if (!databaseUrl) {
-  throw new Error("DATABASE_URL mangler i miljo variabler.");
+  throw new Error("DATABASE_URL mangler i miljø variabler.");
 }
 
 const sql = neon(databaseUrl);
