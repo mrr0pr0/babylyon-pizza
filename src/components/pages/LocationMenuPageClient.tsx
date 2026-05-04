@@ -12,6 +12,7 @@ interface MenuItem {
   name: string;
   description: string;
   fromPrice: number;
+  imageUrl?: string | null;
   category: string;
   location: string;
   allergens: string[];
@@ -152,6 +153,7 @@ export function LocationMenuPageClient({ location }: { location: string }) {
               name={item.name}
               description={item.description}
               fromPrice={parseFloat(item.fromPrice.toString())}
+              imageUrl={item.imageUrl}
               onSelect={setActiveItemId}
             />
           ))}

@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
         mi.name,
         mi.description,
         mi.base_price as "fromPrice",
+        mi.image_url as "imageUrl",
         c.name as category,
         l.slug as location,
         mi.allergens
