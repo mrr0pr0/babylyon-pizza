@@ -12,7 +12,6 @@ export type CartItem = {
   variantId?: number;
   variantLabel?: string;
   modifiers: Record<string, string[]>;
-  note?: string;
 };
 
 type CartState = {

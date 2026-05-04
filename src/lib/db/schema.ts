@@ -132,7 +132,6 @@ export const orderItems = pgTable("order_items", {
   variantId: integer("variant_id").references(() => itemVariants.id),
   quantity: integer("quantity").notNull().default(1),
   modifiers: jsonb("modifiers").notNull().default({}),
-  note: text("note"),
   linePrice: numeric("line_price", { precision: 10, scale: 2 }).notNull(),
 });
 

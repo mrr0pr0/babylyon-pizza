@@ -19,7 +19,6 @@ const createOrderSchema = z.object({
         quantity: z.number().int().positive(),
         linePrice: z.number().nonnegative(),
         modifiers: z.record(z.string(), z.array(z.string())).optional(),
-        note: z.string().optional(),
       }),
     )
     .min(1),
@@ -229,16 +228,14 @@ export async function POST(request: Request) {
           menu_item_id,
           quantity,
           line_price,
-          modifiers,
-          note
+          modifiers
         )
         VALUES (
           ${orderId},
           ${item.menuItemId},
           ${item.quantity},
           ${item.linePrice},
-          ${JSON.stringify(item.modifiers || {})},
-          ${item.note || null}
+          ${JSON.stringify(item.modifiers || {})}
         )
       `;
     }

@@ -107,8 +107,7 @@ async function createSchema() {
       menu_item_id INTEGER REFERENCES menu_items(id) ON DELETE SET NULL,
       quantity INTEGER NOT NULL DEFAULT 1,
       line_price NUMERIC(10, 2) NOT NULL,
-      modifiers JSONB NOT NULL DEFAULT '{}'::jsonb,
-      note TEXT
+      modifiers JSONB NOT NULL DEFAULT '{}'::jsonb
     );
   `;
 
@@ -237,36 +236,9 @@ async function seed() {
     await sql`
       INSERT INTO item_modifiers (item_id, type, label, price_delta, is_required)
       VALUES 
-        -- Kebab modifiers
-        (${kebabId}, 'sauce', 'Hvitløkssaus', 0.00, true),
-        (${kebabId}, 'sauce', 'Sriracha', 0.00, true),
-        (${kebabId}, 'sauce', 'Mild', 0.00, true),
-        (${kebabId}, 'remove', 'Tomat', 0.00, false),
-        (${kebabId}, 'remove', 'Løk', 0.00, false),
-        (${kebabId}, 'remove', 'Agurk', 0.00, false),
-        (${kebabId}, 'remove', 'Isbergsalat', 0.00, false),
-        (${kebabId}, 'extra', 'Ekstra kjøtt', 35.00, false),
-        (${kebabId}, 'extra', 'Ekstra feta', 20.00, false),
-        (${kebabId}, 'extra', 'Ekstra ananas', 15.00, false),
-        (${kebabId}, 'extra', 'Ekstra revet ost', 20.00, false),
-        -- Pizza modifiers
-        (${pizzaId}, 'sauce', 'Mild', 0.00, false),
-        (${pizzaId}, 'sauce', 'Medium', 0.00, false),
-        (${pizzaId}, 'sauce', 'Sterk', 0.00, false),
-        (${pizzaId}, 'sauce', 'Uten saus', 0.00, false),
-        (${pizzaId}, 'extra', 'Ekstra kjøtt', 50.00, false),
-        (${pizzaId}, 'extra', 'Ekstra ost', 20.00, false),
-        (${pizzaId}, 'extra', 'Ekstra ananas', 15.00, false),
-        -- Cheeseburger modifiers
-        (${burgerId}, 'remove', 'Løk', 0.00, false),
-        (${burgerId}, 'remove', 'Salat', 0.00, false),
-        (${burgerId}, 'remove', 'Tomat', 0.00, false),
-        (${burgerId}, 'remove', 'Agurk', 0.00, false),
-        (${burgerId}, 'extra', 'Ekstra ost', 20.00, false),
-        (${burgerId}, 'extra', 'Ekstra bacon', 35.00, false),
-        (${burgerId}, 'addon', 'Brus 0.5', 35.00, false),
-        (${burgerId}, 'addon', 'Brus 1.5', 55.00, false),
-        (${burgerId}, 'addon', 'Energi brus', 40.00, false);
+        (${kebabId}, 'sauce', 'Hvitløkssaus', 0.00, false),
+        (${kebabId}, 'sauce', 'Sriracha', 0.00, false),
+        (${pizzaId}, 'extra', 'Ekstra kjøtt', 50.00, false);
     `;
     console.log("✓ Created item modifiers");
 

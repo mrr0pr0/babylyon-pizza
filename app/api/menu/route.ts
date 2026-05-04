@@ -45,45 +45,14 @@ export async function GET(request: NextRequest) {
       ORDER BY c.sort_order, mi.name
     `;
 
-    // Fetch item modifiers for all returned menu items
-    const itemIds = menuItemsResult.map((item: any) => item.id);
-    let modifiersResult: any[] = [];
-
-    if (itemIds.length > 0) {
-      modifiersResult = await sql`
-        SELECT
-          id,
-          item_id as "itemId",
-          type,
-          label,
-          price_delta as "priceDelta",
-          is_required as "isRequired"
-        FROM item_modifiers
-        WHERE item_id = ANY(${itemIds})
-        ORDER BY item_id, type, id
-      `;
-    }
-
-    const modifiersMap = new Map<number, any[]>();
-    modifiersResult.forEach((modifier: any) => {
-      const list = modifiersMap.get(modifier.itemId) || [];
-      list.push(modifier);
-      modifiersMap.set(modifier.itemId, list);
-    });
-
-    const itemsWithModifiers = menuItemsResult.map((item: any) => ({
-      ...item,
-      modifiers: modifiersMap.get(item.id) ?? [],
-    }));
-
     // Group by category
     const grouped = Array.from(
       new Map(
-        itemsWithModifiers.map((item: any) => [item.category, item.category])
+        menuItemsResult.map((item: any) => [item.category, item.category])
       ).entries()
     ).map(([category]) => ({
       category,
-      items: itemsWithModifiers.filter((item: any) => item.category === category),
+      items: menuItemsResult.filter((item: any) => item.category === category),
     }));
 
     // Fetch location hours from database
