@@ -12,7 +12,6 @@ interface MenuItem {
   name: string;
   description: string;
   fromPrice: number;
-  imageUrl?: string | null;
   category: string;
   location: string;
   allergens: string[];
@@ -153,7 +152,6 @@ export function LocationMenuPageClient({ location }: { location: string }) {
               name={item.name}
               description={item.description}
               fromPrice={parseFloat(item.fromPrice.toString())}
-              imageUrl={item.imageUrl}
               onSelect={setActiveItemId}
             />
           ))}
@@ -171,14 +169,25 @@ export function LocationMenuPageClient({ location }: { location: string }) {
           allergens={activeItem.allergens}
           basePrice={parseFloat(activeItem.fromPrice.toString())}
           onClose={() => setActiveItemId(null)}
-          onAddToCart={({ sauce, quantity }) => {
+          onAddToCart={({ sauce, removed, ekstra, leggTil, quantity, unitPrice }) => {
+            const modifierKey = [
+              sauce,
+              removed.join("|"),
+              ekstra.join("|"),
+              leggTil.join("|"),
+            ].join("::");
             addItem({
-              id: `${activeItem.id}-${sauce}`,
+              id: `${activeItem.id}-${modifierKey}`,
               menuItemId: activeItem.id,
               name: activeItem.name,
-              unitPrice: parseFloat(activeItem.fromPrice.toString()),
+              unitPrice,
               quantity,
-              modifiers: { sauce: [sauce] },
+              modifiers: {
+                sauce: [sauce],
+                removed,
+                ekstra,
+                leggTil,
+              },
             });
             setActiveItemId(null);
           }}
