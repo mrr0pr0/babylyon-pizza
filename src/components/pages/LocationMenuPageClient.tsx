@@ -12,6 +12,7 @@ interface MenuItem {
   name: string;
   description: string;
   fromPrice: number;
+  imageUrl?: string | null;
   category: string;
   location: string;
   allergens: string[];
@@ -152,6 +153,7 @@ export function LocationMenuPageClient({ location }: { location: string }) {
               name={item.name}
               description={item.description}
               fromPrice={parseFloat(item.fromPrice.toString())}
+              imageUrl={item.imageUrl}
               onSelect={setActiveItemId}
             />
           ))}
@@ -168,6 +170,7 @@ export function LocationMenuPageClient({ location }: { location: string }) {
           description={activeItem.description}
           allergens={activeItem.allergens}
           basePrice={parseFloat(activeItem.fromPrice.toString())}
+          imageUrl={activeItem.imageUrl}
           onClose={() => setActiveItemId(null)}
           onAddToCart={({ sauce, removed, ekstra, leggTil, quantity, unitPrice }) => {
             const modifierKey = [

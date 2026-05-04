@@ -14,6 +14,7 @@ type ItemModalProps = {
   description: string;
   allergens: string[];
   basePrice: number;
+  imageUrl?: string | null;
   onClose: () => void;
   onAddToCart: (payload: {
     sauce: string;
@@ -127,6 +128,7 @@ export function ItemModal({
   description,
   allergens,
   basePrice,
+  imageUrl,
   onClose,
   onAddToCart,
 }: ItemModalProps) {
@@ -182,6 +184,16 @@ export function ItemModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
       <div className="flex max-h-[90vh] w-full max-w-xl flex-col rounded-md border border-[var(--color-border)] bg-[var(--color-surface)]">
+        {imageUrl && (
+          <div className="h-48 w-full overflow-hidden rounded-t-md bg-[var(--color-border)]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={imageUrl}
+              alt={name}
+              className="h-full w-full object-cover"
+            />
+          </div>
+        )}
         <div className="flex items-start justify-between border-b border-[var(--color-border)] p-4">
           <div>
             <h3 className="font-display text-2xl uppercase tracking-[0.08em]">
@@ -195,14 +207,14 @@ export function ItemModal({
           <button
             type="button"
             onClick={onClose}
-            className="ml-2 text-sm text-[var(--color-muted)] hover:text-white"
+            className="ml-2 text-sm text-[var(--color-muted)] hover:text-red-200 text-red-700"
           >
             Lukk
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          <Section title={`Velg Saus  VELG (1)`} required>
+          <Section title={`Velg Saus  VELG (1)`} required defaultOpen={true}>
             {sauceOptions.map((option) => (
               <OptionRow
                 key={option.id}
@@ -216,7 +228,7 @@ export function ItemModal({
             ))}
           </Section>
 
-          <Section title="Ta Bort">
+          <Section title="Ta Bort" defaultOpen={false}>
             {removeOptions.map((option) => (
               <OptionRow
                 key={option.id}
@@ -229,7 +241,7 @@ export function ItemModal({
             ))}
           </Section>
 
-          <Section title="Ekstra">
+          <Section title="Ekstra" defaultOpen={false}>
             {ekstraOptions.map((option) => (
               <OptionRow
                 key={option.id}
@@ -242,7 +254,7 @@ export function ItemModal({
             ))}
           </Section>
 
-          <Section title="Legg Til">
+          <Section title="Legg Til" defaultOpen={false}>
             {leggTilOptions.map((option) => (
               <OptionRow
                 key={option.id}
